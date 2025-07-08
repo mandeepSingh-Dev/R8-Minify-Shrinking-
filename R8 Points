@@ -1,0 +1,63 @@
+Start with minifyEnabled true & shrinkResources true in your release build.
+❌ Don’t use them in debug, but simulate production with a staging or uat build variant.  -> WHY NOT IN DEBUG 
+
+  // 👉 Custom client build. NEED TO BE SHARED.
+        create("clientRelease") {
+            initWith(getByName("release")) // Inherit from release
+            isDebuggable = true            // Enable debug logs
+            isMinifyEnabled = true         // Apply R8 to test shrink/obfuscation
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug") // Or a test keystore
+        }
+
+
+HOW TO WORK WITH MULTI MODULE AND HANDLE THESE
+app/
+core/
+feature-auth/
+feature-profile/
+feature-chat/
+data/
+domain/
+
+
+What will this do ./gradlew assembleStagingRelease
+
+
+
+What is reflection 
+
+Logs will work When R8 Enabled.
+  Log.e() will still work even if you don’t use isDebuggable = true — but with some important caveats:
+
+Log Type	Without isDebuggable = true (i.e., default release)
+Log.v()	❌ Usually stripped by R8
+Log.d()	❌ Usually stripped by R8
+Log.i()	⚠️ Sometimes stripped
+Log.w()	✅ Usually retained
+Log.e()	✅ Retained by default (unless you strip it manually)
+
+
+TO CHECK WHAT REMOVED OR NOT
+ usage.txt           ->     What R8 removed
+ seeds.txt            ->     What R8 Kept
+ Mapping.txt       ->     Obfuscation mapping
+ Resources.txt    ->     What resources are kept
+
+
+
+To PREVENT CLASSES/METHODS TO BE REMOVED FROM R8 
+Because R8 preserves all manifest-declared classes.
+But you must use -keep when using:
+
+Reflection
+Gson/Retrofit
+Hilt/Dagger
+Serialization
+Dynamic loading
+Declared in Navigation Graph or Hilt Injected:
+
+If you're using @HiltViewModel, and injecting ViewModel through by viewModels(), R8 traces usage.
+
+Or you use navGraphViewModels() and your ViewModel class is part of the graph — it's safe.
+Standard app using Hilt + ViewModels with by viewModels() -> No need of add in proguard.
