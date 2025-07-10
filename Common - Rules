@@ -1,0 +1,147 @@
+##########################################
+# 🔐 General safe rules
+##########################################
+
+# Keep all Kotlin metadata
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
+
+# Don't warn on common Kotlin/Java libraries
+-dontwarn kotlin.**
+-dontwarn kotlinx.coroutines.**
+-dontwarn javax.annotation.**
+-dontwarn org.jetbrains.annotations.**
+
+##########################################
+# 🧩 Core Android Components
+##########################################
+
+# Keep all Activities and Fragments
+-keep class * extends android.app.Activity
+-keep class * extends androidx.fragment.app.Fragment
+
+# Keep ViewModels
+-keep class * extends androidx.lifecycle.ViewModel
+
+# Keep Parcelable classes (like @Parcelize)
+-keep class * implements android.os.Parcelable { *; }
+
+##########################################
+# 🚀 Retrofit + Gson/Moshi
+##########################################
+
+# Retrofit annotations
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+
+# Keep Retrofit interfaces
+-if interface * { @retrofit2.http.* <methods>; }
+-keep interface <1>
+
+# Retrofit classes
+-keep class retrofit2.** { *; }
+-dontwarn retrofit2.**
+
+# Gson (de/serialization via reflection)
+-keep class com.google.gson.** { *; }
+-dontwarn com.google.gson.**
+
+# Moshi (optional)
+-keep class com.squareup.moshi.** { *; }
+-dontwarn com.squareup.moshi.**
+
+##########################################
+# 🛢️ Room (Database)
+##########################################
+
+# Keep Room entities and DAO interfaces
+-keep class androidx.room.** { *; }
+-keepclassmembers class * {
+    @androidx.room.* <methods>;
+}
+-dontwarn androidx.room.**
+
+##########################################
+# 🧪 Coroutines and Flow
+##########################################
+
+-keep class kotlin.coroutines.** { *; }
+-dontwarn kotlin.coroutines.**
+
+# Needed to retain suspend function metadata
+-keepclassmembers class * {
+    @kotlin.Metadata *;
+}
+
+##########################################
+# ⚙️ Hilt / Dagger
+##########################################
+
+-keep class dagger.hilt.** { *; }
+-keep interface dagger.hilt.** { *; }
+-dontwarn dagger.hilt.**
+-keep class javax.inject.** { *; }
+-dontwarn javax.inject.**
+
+# Hilt generated entry points
+-keep class * extends dagger.hilt.EntryPoint { *; }
+-keep class * extends dagger.hilt.android.internal.lifecycle.HiltViewModelFactory { *; }
+
+##########################################
+# 📦 Navigation Component + SafeArgs
+##########################################
+
+-keep class androidx.navigation.** { *; }
+-dontwarn androidx.navigation.**
+
+-keep class * implements androidx.navigation.NavArgs { *; }
+
+##########################################
+# 🔍 Logging (optional)
+##########################################
+
+# Strip out debug/info/verbose logs in release builds
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...); # Optional
+    # public static int e(...); # Uncomment to strip error logs too
+}
+
+##########################################
+# 🧼 Keep your model classes (if reflective)
+##########################################
+
+# Example: models used in Retrofit or Gson
+-keep class com.yourpackage.model.** { *; }
+
+##########################################
+# 🧩 Your app-specific interfaces (like DatastoreManager)
+##########################################
+
+-keep interface com.yourpackage.data.local.datastore.DatastoreManager
+-keep interface com.yourpackage.**  # Adjust based on your usage
+
+##########################################
+# 🗃️ Prevent obfuscation of XML-referenced classes
+##########################################
+
+# Custom Views used in XML
+-keep class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
+# Services, BroadcastReceivers, ContentProviders, etc.
+-keep class * extends android.app.Service
+-keep class * extends android.content.BroadcastReceiver
+-keep class * extends android.content.ContentProvider
+
+##########################################
+# 🧪 Keep Testing Logs/Crash logs readable (for staging/clientRelease)
+##########################################
+
+# Keep line numbers in stack traces
+-keepattributes SourceFile, LineNumberTable
+
+# Optional: Hide source file name
+# -renamesourcefileattribute SourceFile
